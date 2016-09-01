@@ -35,7 +35,9 @@ mBase这里指的是 ContextImpl类，为什么是 ContextImpl类，我为在后
            
     }
 
-上面我省略了一下不重要的代码，只关注核心的代码。ActivityManagerNative.getDefault()返回的是 ActivityManagerProxy对象。参数mMainThread.getApplicationThread()返回ApplicationThread 这个对象，ApplicationThread是个Binder对象，这个Binder对象是用来让服务进程和当前应用程序进程通信的。这里的服务进程指的是ActivityManagerNative对象所在的进程。参数service 是一个Intent对象。我们进入到ActivityManagerProxy对象的startService()方法：
+上面我省略了一下不重要的代码，只关注核心的代码。ActivityManagerNative.getDefault()返回的是 ActivityManagerProxy对象。参数mMainThread.getApplicationThread()返回ApplicationThread 这个对象，ApplicationThread是个Binder对象，这个Binder对象是用来让服务进程和当前应用程序进程通信的。这里的服务进程指的是ActivityManagerNative对象所在的进程。参数service 是一个Intent对象。         这里的intent.resolveTypeIfNeeded返回这个intent的MIME类型，在这个例子中，没有在AndroidManifest.xml中设置Service的MIME类型，因此，这里返回null。
+
+  我们进入到ActivityManagerProxy对象的startService()方法：
 
 ## ActivityManagerProxy.startService()
 
