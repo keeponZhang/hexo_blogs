@@ -12,46 +12,54 @@ Java中代理分为2种， 静态代理和动态代理。
 
 从图中可以看出，代理对象是客户端和真实对象之间的桥梁。代理对象要实现真实对象的所有公开方法（或者接口），而且当真实对象的接口修改的时候，代理对象也要做修改。而且在构造代理对象的时候，必须要知道真实对象。就是说代理对象和真实对象在编译时就已经绑定了。
 
-
-
 ## 动态代理
 
-代理类获知或者被告知真实对象的类型、接口列表时，代理可以根据反射构造出真实对象来，进而调用真实对象的相应方法，这就是动态代理：**代理类在定义时不需要知道具体要代理哪个真实对象，我们在运行时告诉代理类这些好了**。
+先来看一个简单的demo
 
-案例参考 [http://www.cnblogs.com/flyoung2008/archive/2013/08/11/3251148.html](http://www.cnblogs.com/flyoung2008/archive/2013/08/11/3251148.html)
+```
+public interface Subject{      
+  public void doSomething();   
+}   
 
+public class RealSubject implements Subject{
+  public void doSomething(){
+    System.out.println( "call doSomething()" );   
+  }   
+}   
 
+public class ProxyHandler implements InvocationHandler{
+  private Object proxied;   
+     
+  public ProxyHandler( Object proxied ) { 
+    this.proxied = proxied;   
+  }   
+     
+  public Object invoke( Object proxy, Method method, Object[] args ) throws Throwable{
+    //在转调具体目标对象之前，可以执行一些功能处理
 
-### **Java字节码生成开源框架介绍--Javassist**
+    //转调具体目标对象的方法
+    return method.invoke( proxied, args);  
+    
+    //在转调具体目标对象之后，可以执行一些功能处理
+  }    
+}
+```
 
-Javassist是一个开源的分析、编辑和创建Java字节码的类库。是由东京工业大学的数学和计算机科学系的 Shigeru Chiba （千叶 滋）所创建的。它已加入了开放源代码JBoss 应用服务器项目,通过使用Javassist对字节码操作为JBoss实现动态AOP框架。javassist是[jboss](http://baike.baidu.com/view/309533.htm)的一个子项目，其主要的优点，在于简单，而且快速。直接使用java编码的形式，而不需要了解虚拟机(但是ASM需要了解虚拟机指令)指令，就能动态改变类的结构，或者动态生成类。
+如何使用
 
+```
+  public static void main( String args[] ){
+     RealSubject real = new RealSubject();   
+     Subject proxySubject = (Subject)Proxy.newProxyInstance(Subject.class.getClassLoader(), 
+     	new Class[]{Subject.class}, 
+     	new ProxyHandler(real)
+     );
+         
+     proxySubject.doSomething();
+  }   
+```
 
-
-	import javassist.ClassPool;  
-	import javassist.CtClass;  
-	import javassist.CtMethod;  
-	import javassist.CtNewMethod;  
-	public class MyGenerator {  
-	
-	    public static void main(String[] args) throws Exception {  
-	        ClassPool pool = ClassPool.getDefault();  
-	        //创建Programmer类       
-	        CtClass cc= pool.makeClass("com.samples.Programmer");  
-	        //定义code方法  
-	        CtMethod method = CtNewMethod.make("public void code(){}", cc);  
-	        //插入方法代码  
-	        method.insertBefore("System.out.println(\"I'm a Programmer,Just Coding.....\");");  
-	        cc.addMethod(method);  
-	        //保存生成的字节码  
-	        cc.writeFile("d://temp");  
-	    }  
-	}  
-
-通过JD-gui反编译工具打开Programmer.class 可以看到以下代码：
-
-![](http://77fzym.com1.z0.glb.clouddn.com/a.png)
-
+代理类获知或者被告知真实对象的类型、接口列表时，代理可以根据反射构造出真实对象来，进而调用真实对象的相应方法，这就是动态代理。**代理类在定义时不需要知道具体要代理哪个真实对象，我们在运行时告诉代理类这些好了**。
 
 
 
@@ -77,8 +85,7 @@ JDK提供了**sun.misc.ProxyGenerator.generateProxyClass(String proxyName,class[
 	     * params :clazz 需要生成动态代理类的类
 	     * proxyName : 为动态生成的代理类的名称
 	    &nbsp;*/
-	public static void generateClassFile(Class clazz,String proxyName)
-	{
+	public static void generateClassFile(Class clazz,String proxyName){
 		//根据类信息和提供的代理类名称，生成字节码
 	    byte[] classFile =ProxyGenerator.generateProxyClass(proxyName, clazz.getInterfaces()); 
 		String paths = clazz.getResource(".").getPath();
@@ -204,7 +211,11 @@ JDK提供了**sun.misc.ProxyGenerator.generateProxyClass(String proxyName,class[
 
 参考
 
- [http://blog.csdn.net/luanlouis/article/details/24589193](http://blog.csdn.net/luanlouis/article/details/24589193)
+[http://www.cnblogs.com/linjiqin/archive/2011/02/18/1957600.html](http://www.cnblogs.com/linjiqin/archive/2011/02/18/1957600.html)
+
+[http://www.cnblogs.com/flyoung2008/archive/2013/08/11/3251148.html](http://www.cnblogs.com/flyoung2008/archive/2013/08/11/3251148.html)
+
+[http://blog.csdn.net/luanlouis/article/details/24589193](http://blog.csdn.net/luanlouis/article/details/24589193)
 
 
 
